@@ -1,0 +1,221 @@
+<!DOCTYPE html>
+<html lang="en">
+	<head>
+		<meta charset="utf-8">
+		<meta http-equiv="X-UA-Compatible" content="IE=edge">
+		<meta name="viewport" content="width=device-width, initial-scale=1">
+		<title>サンクトペテルブルクのパラドックスゲーム</title>
+		<!-- Bootstrap -->
+		<link rel="stylesheet" href="https://maxcdn.bootstrapcdn.com/bootstrap/3.2.0/css/bootstrap.min.css">
+		<!-- JQuery -->
+		<script src="https://ajax.googleapis.com/ajax/libs/jquery/1.11.1/jquery.min.js"></script>
+		<!-- bootstrap -->
+		<script src="https://maxcdn.bootstrapcdn.com/bootstrap/3.2.0/js/bootstrap.min.js"></script>
+		<script>
+			// Websocketエンドポイント宣言
+			var ws_url = "ws://" + window.location.host + "/websocket";
+			// WebSocket接続変数
+			var ws_connection;
+
+			var player_status;
+
+			var bot;
+
+			// WebSocketの初期化
+			function ws_init() {
+				if (!("WebSocket" in window)) {
+					// WebSocketが対応しないブラウザの場合にメッセージを表示します。
+					display_alert("お使いのブラウザはWebSocketを対応していません。");
+				} else {
+					connect();
+				}
+			}
+			;
+			// WebSocket接続関数
+			function connect() {
+				ws_connection = new WebSocket(ws_url);
+				// 接続が出来たら、uuid を送信してユーザー認証する
+				ws_connection.onopen = function(e) {
+					ws_connection.send("login:" + get_uuid());
+					ws_connection.send('get_status');
+				};
+				// WebSocketからメッセージが届くときに実行される関数
+				ws_connection.onmessage = function(e) {
+					var msg = JSON.parse(e.data);
+					console.log("msg type = " + msg.type);
+					switch (msg.type) {
+						case "update_status":
+							update_status(msg.data);
+							player_status = msg.data;
+							break;
+						case "update_sum":
+							update_sum(msg.data);
+							break;
+						default:
+							ws_connection.close(1000, "unknown message");
+					}
+				};
+				// WebSocketが切断されるときにメッセージを表示
+				ws_connection.onclose = function(e) {
+					window.alert("一定時間操作がされなかったため接続が切断されました。ページをリロードしてください。");
+				}
+			}
+
+			function post_bet() {
+				ws_connection.send("post_bet");
+			}
+
+			function post_reset() {
+				if (!window.confirm("ユーザーをリセットしますか？")) {
+					return;
+				}
+				remove_uuid();
+				ws_connection.send("login:" + get_uuid());
+				ws_connection.send('get_status');
+			}
+
+			function update_status(status) {
+				$("#my_coin").text(status.coin);
+				$("#my_combo").text(status.combo);
+				$("#my_max_combo").text(status.max_combo);
+				$("#my_max_coin").text(status.max_coin);
+				$("#my_total_game").text(status.total_game);
+				update_history(status.history);
+				if (status.coin >= 0) {
+					$("#my_coin").addClass("my_coin_plus").removeClass("my_coin_minus");
+				} else {
+					$("#my_coin").addClass("my_coin_minus").removeClass("my_coin_plus");
+				}
+			}
+
+			function update_sum(sum) {
+				$("#all_coin").text(sum);
+				if (sum >= 0) {
+					$("#all_coin").addClass("my_coin_plus").removeClass("my_coin_minus");
+				} else {
+					$("#all_coin").addClass("my_coin_minus").removeClass("my_coin_plus");
+				}
+			}
+
+			function update_history(history) {
+				$("#history").html("");
+				for (h in history) {
+					$("#history").append("<tr><td>" + h + "回</td>" + "<td>" + history[h] + "回</td></tr>");
+				}
+			}
+
+			function get_uuid() {
+				var uuid = window.localStorage.getItem("uuid");
+				if (uuid) {
+					return uuid;
+				}
+				uuid = generate_uuid();
+				window.localStorage.setItem("uuid", uuid);
+				return uuid;
+			}
+
+			function remove_uuid() {
+				window.localStorage.removeItem("uuid");
+			}
+
+			function generate_uuid() {
+				function s4() {
+					return Math.floor((1 + Math.random()) * 0x10000)
+							.toString(16)
+							.substring(1);
+				}
+				return s4() + s4() + '-' + s4() + '-' + s4() + '-' +
+						s4() + '-' + s4() + s4() + s4();
+			}
+
+			var autoplayTimer;
+			var isAutodrive = false;
+			function autodrive() {
+				post_bet();
+				autoplayTimer = setTimeout(start_autodrive, 50);
+			}
+			function start_autodrive() {
+				isAutodrive = true;
+				$("#btn-auto-play")
+						.text("ストップ")
+						.removeClass("btn-success")
+						.addClass("btn-danger")
+				autodrive();
+			}
+			function stop_autodrive() {
+				isAutodrive = false;
+				$("#btn-auto-play")
+						.text("オートプレイ！")
+						.removeClass("btn-danger")
+						.addClass("btn-success");
+				clearTimeout(autoplayTimer);
+			}
+
+			// JS初期化
+			$(function($) {
+				ws_init();
+				$("#btn-post-bet").click(function() {
+					post_bet();
+				});
+				$("#btn-post-reset").click(function() {
+					post_reset();
+				});
+				$("#btn-auto-play").click(function() {
+					isAutodrive ? stop_autodrive() : start_autodrive();
+				});
+
+			});
+		</script>
+		<style type="text/css">
+			<!--
+			.my_coin_plus {
+				color: black;
+			}
+			.my_coin_minus {
+				color:red;
+			}
+			td {
+				text-align: right;
+				padding-left: 50px;
+			}
+			#btn-auto-play {
+				width: 150px;
+			}
+			//-->
+		</style>
+	</head>
+	<body>
+		<div class="container">
+			<h1>サンクトペテルブルクのパラドックスゲーム</h1>
+			<h2>あなたのコイン：<span id="my_coin">-</span>枚</h2>
+			<h3>みんなのコインの合計：<span id="all_coin">-</span>枚</h3>
+			<div>
+				<button id="btn-post-bet" type="button" class="btn btn-primary">コインを投げる！</button>
+				<button id="btn-auto-play" type="button" class="btn btn-success">オートプレイ！</button>
+				<button id="btn-post-reset" type="button" class="btn btn-info">リセットする</button>
+			</div>
+
+			<dl>
+				<dt>トータルプレイ回数</dt>
+				<dd><span id="my_total_game">-</span>回</dd>
+				<dt>現在の連続成功回数</dt>
+				<dd><span id="my_combo">-</span>回</dd>
+				<dt>連続成功回数最高記録</dt>
+				<dd><span id="my_max_combo">-</span>回</dd>
+				<dt>所持コイン最高記録</dt>
+				<dd><span id="my_max_coin">-</span>枚</dd>
+			</dl>
+
+			<table>
+				<thead>
+					<tr>
+						<th>連続成功回数  </th><th></th>
+					</tr>
+				</thead>
+				<tbody id="history">
+				</tbody>
+			</table>
+		</div><!-- /.container -->
+
+	</body>
+</html>

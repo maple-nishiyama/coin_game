@@ -104,20 +104,20 @@
 				});
 			}
 			function update_my_properties(coin, times) {
-				fee_list.forEach(function(fee, i, a){
+				fee_list.forEach(function(fee, i, a) {
 					var target = $("#my_prop_" + fee);
 					var amount = coin - fee * times;
 					target.text(amount.toLocaleString() + "枚");
-					amount < 0 ? target.addClass("minus") :	target.removeClass("minus");
+					amount < 0 ? target.addClass("minus") : target.removeClass("minus");
 				});
 			}
 
 			function update_all_properties(coin, times) {
-				fee_list.forEach(function(fee, i, a){
+				fee_list.forEach(function(fee, i, a) {
 					var target = $("#all_prop_" + fee);
 					var amount = coin - fee * times;
 					target.text(amount.toLocaleString() + "枚");
-					amount < 0 ? target.addClass("minus") :	target.removeClass("minus");
+					amount < 0 ? target.addClass("minus") : target.removeClass("minus");
 				});
 			}
 
@@ -128,13 +128,14 @@
 				} else {
 					$("#all_coin").addClass("my_coin_minus").removeClass("my_coin_plus");
 				}
+				$("#all_games").text(sum.times.toLocaleString());
 				update_all_properties(sum.amount, sum.times)
 			}
 
 			function update_history(history) {
 				$("#history").html("");
 				for (h in history) {
-					$("#history").append("<tr><td>" + h + "回</td>" + "<td>" + history[h] + "回</td></tr>");
+					$("#history").append("<tr><th>" + h + "回</th>" + "<td>" + history[h].toLocaleString() + "回</td></tr>");
 				}
 			}
 
@@ -223,22 +224,32 @@
 			<h1>サンクトペテルブルクのパラドックスゲーム</h1>
 			<h2>あなたが受け取ったコイン：<span id="my_coin">-</span>枚</h2>
 			<h3>みんなが受け取ったコインの合計：<span id="all_coin">-</span>枚</h3>
+			<h3>みんなのプレイ回数：<span id="all_games">-</span>回</h3>
 			<div>
 				<button id="btn-post-bet" type="button" class="btn btn-primary">コインを投げる！</button>
 				<button id="btn-auto-play" type="button" class="btn btn-success">オートプレイ！</button>
 				<button id="btn-post-reset" type="button" class="btn btn-info">リセットする</button>
 			</div>
 
-			<dl>
-				<dt>トータルプレイ回数</dt>
-				<dd><span id="my_total_game">-</span>回</dd>
-				<dt>現在の連続成功回数</dt>
-				<dd><span id="my_combo">-</span>回</dd>
-				<dt>連続成功回数最高記録</dt>
-				<dd><span id="my_max_combo">-</span>回</dd>
-				<dt>所持コイン最高記録</dt>
-				<dd><span id="my_max_coin">-</span>枚</dd>
-			</dl>
+			<h4>あなたの成績</h4>
+			<table>
+				<tr>
+					<th>トータルプレイ回数</th>
+					<td><span id="my_total_game">-</span>回</td>
+				</tr>
+				<tr>
+					<th>現在の連続成功回数</th>
+					<td><span id="my_combo">-</span>回</td>
+				</tr>
+				<tr>
+					<th>連続成功回数最高記録</th>
+					<td><span id="my_max_combo">-</span>回</td>
+				</tr>
+				<tr>
+					<th>所持コイン最高記録</th>
+					<td><span id="my_max_coin">-</span>枚</td>
+				</tr>
+			</table>
 
 			<h4>連続成功回数の履歴</h4>
 			<table>

@@ -166,7 +166,7 @@
 			var isAutodrive = false;
 			function autodrive() {
 				post_bet();
-				autoplayTimer = setTimeout(start_autodrive, 10);
+				autoplayTimer = setTimeout(start_autodrive, 50);
 			}
 			function start_autodrive() {
 				isAutodrive = true;
@@ -210,28 +210,42 @@
 			}
 			td,th {
 				text-align: right;
-				padding-left: 50px;
 			}
 			#btn-auto-play {
 				width: 150px;
+			}
+			footer {
+				margin-top: 20px;
+				text-align: right;
 			}
 			//-->
 		</style>
 	</head>
 	<body>
 		<div class="container">
-			<h1>サンクトペテルブルクのパラドックスゲーム</h1>
-			<h2>あなたが受け取ったコイン：<span id="my_coin">-</span>枚</h2>
-			<h3>みんなが受け取ったコインの合計：<span id="all_coin">-</span>枚</h3>
-			<h3>みんなのプレイ回数：<span id="all_games">-</span>回</h3>
+			<h1 class="h1">サンクトペテルブルクのパラドックスゲーム</h1>
+			<h2>これはなに？</h2>
+			<p>
+				意思決定論の問題、「サンクトペテルブルクのパラドックス」を体験できるシミュレーターです。<br/>
+				オンラインで参加者全体のプレイ結果を集計しているので、みんなで遊べば全体の成績が向上することが期待できます。<br/>
+				実装には Erlang/OTP, Cowboy, Websocket などの技術を使っています。
+			</p>
+			<ul class="ul">
+				<li><a href="https://twitter.com/kuina_ch/status/628220045143834624" target="_blank">ツイッター</a></li>
+				<li><a href="https://ja.wikipedia.org/wiki/%E3%82%B5%E3%83%B3%E3%82%AF%E3%83%88%E3%83%9A%E3%83%86%E3%83%AB%E3%83%96%E3%83%AB%E3%82%AF%E3%81%AE%E3%83%91%E3%83%A9%E3%83%89%E3%83%83%E3%82%AF%E3%82%B9" target="_blank">Wikipedia： サンクトペテルブルクのパラドックス</a></li>
+			</ul>
+
+			<h2 class="h2">あなたが受け取ったコイン：<span id="my_coin">-</span>枚</h2>
+			<h3 class="h3">みんなが受け取ったコインの合計：<span id="all_coin">-</span>枚</h3>
+			<h3 class="h3">みんなのプレイ回数：<span id="all_games">-</span>回</h3>
 			<div>
 				<button id="btn-post-bet" type="button" class="btn btn-primary">コインを投げる！</button>
 				<button id="btn-auto-play" type="button" class="btn btn-success">オートプレイ！</button>
 				<button id="btn-post-reset" type="button" class="btn btn-info">リセットする</button>
 			</div>
 
-			<h4>あなたの成績</h4>
-			<table>
+			<h4 class="h4">あなたの成績</h4>
+			<table class="table">
 				<tr>
 					<th>トータルプレイ回数</th>
 					<td><span id="my_total_game">-</span>回</td>
@@ -249,14 +263,14 @@
 			<div class="row">
 				<div class="col-md-6">
 					<h4>連続成功回数の履歴</h4>
-					<table>
+					<table class="table table-condensed table-striped">
 						<tbody id="history">
 						</tbody>
 					</table>
 				</div>
 				<div class="col-md-6">
-					<h4>参加料N枚の場合の差し引き財産</h4>
-					<table>
+					<h4 class="h4">参加料N枚の場合の差し引き財産</h4>
+					<table class="table table-condensed table-striped">
 						<thead>
 							<tr>
 								<th>参加料</th>
@@ -270,6 +284,11 @@
 				</div>
 			</div>
 		</div><!-- /.container -->
-
+		<hr>
+		<footer class="footer">
+			一定時間操作がされないと、接続が切れます。<br/>
+			過度にサーバーに負荷をかける行為などはご遠慮ください。<br/>
+			ご連絡は <a href="https://twitter.com/d_nishiyama85">@d_nishiyama85</a> まで
+		</footer>
 	</body>
 </html>

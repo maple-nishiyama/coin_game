@@ -22,6 +22,12 @@
 
 			var bot;
 
+			var myCoin = 0;
+
+			var autoPlayDelay = 50;
+
+			var playAnimation = true;
+
 			// WebSocketの初期化
 			function ws_init() {
 				if (!("WebSocket" in window)) {
@@ -50,6 +56,7 @@
 							player_status = msg.data;
 							break;
 						case "play_result":
+							var diff = msg.data.coin - myCoin;
 							update_status(msg.data);
 							player_status = msg.data;
 							// アニメーション再生
@@ -58,6 +65,8 @@
 								play_result_animation(true, status.combo);
 							} else if (status.last_game === "lose") {
 								play_result_animation(false);
+								// コイン加算のアニメーション
+								play_coin_gain_plus_animation(diff);
 							}
 							break;
 						case "update_sum":
@@ -87,6 +96,7 @@
 			}
 
 			function update_status(status) {
+				myCoin = status.coin;
 				$("#my_coin").text(status.coin.toLocaleString());
 				$("#my_combo").text(status.combo.toLocaleString());
 				$("#my_max_combo").text(status.max_combo.toLocaleString());
@@ -178,7 +188,7 @@
 			var isAutodrive = false;
 			function autodrive() {
 				post_bet();
-				autoplayTimer = setTimeout(start_autodrive, 50);
+				autoplayTimer = setTimeout(start_autodrive, autoPlayDelay);
 			}
 			function start_autodrive() {
 				isAutodrive = true;
@@ -199,15 +209,47 @@
 
 			// アニメーション
 			function play_result_animation(isWin, times) {
+				if (!playAnimation) {
+					return;
+				}
 				var text = isWin ? "" + times + "連勝" : "負";
 				var color = isWin ? "red" : "blue";
+				var parent = $("#result_anime");
 				var anime = $("<span></span>", {class: "anime-result", text: text, style: "color:" + color + ";"});
-				$("#result_anime").prepend(anime);
+				anime.css("left", parent.width() + "px");
+				parent.prepend(anime);
 				anime.animate({
-					"left": "+=100px"
+					"left": "+=300px",
+					"opacity": 0
 				},
 				{
 					duration: 1000,
+					easing: "easeOutQuad",
+					complete: function() {
+						this.remove();
+					}
+				});
+			}
+			// コイン増加数のアニメーション
+			function play_coin_gain_plus_animation(gain) {
+				if (!playAnimation) {
+					return;
+				}
+				if (gain <= 0) {
+					return;
+				}
+				var parent = $("#my_coin_header");
+				var anime = $("<span></span>", {class: "anime-coin-plus", text: "+" + gain});
+				anime.css("left", (parent.width() - 70)+ "px");
+				anime.css("bottom", parent.height() + "px");
+				parent.append(anime);
+				var bottom = gain >= 128 ? 30 : 0;
+				anime.animate({
+					"bottom": "+=100px",
+					"opacity": 0
+				},
+				{
+					duration: 500,
 					easing: "easeOutQuad",
 					complete: function() {
 						this.remove();
@@ -227,6 +269,12 @@
 				$("#btn-auto-play").click(function() {
 					isAutodrive ? stop_autodrive() : start_autodrive();
 				});
+				$("#animation-checkbox").click(function(){
+					playAnimation = $("#animation-checkbox").prop("checked");
+				});
+				if (playAnimation) {
+					$("#animation-checkbox").prop("checked", true);
+				}
 				init_properties();
 			});
 		</script>
@@ -251,12 +299,21 @@
 			.tweet_button {
 				margin: 20px;
 			}
+			.animation-checkbox {
+				margin-left: 50px;
+			}
 			/* 結果アニメーション */
 			span.anime-result {
+				white-space: nowrap;
 				position: absolute;
-				left: 500px;
 				font-size: x-large;
 				font-weight: bold;
+			}
+			span.anime-coin-plus {
+				position: absolute;
+				font-size: x-large;
+				font-weight: bold;
+				color: green;
 			}
 			//-->
 		</style>
@@ -276,14 +333,14 @@
 				<li>ソース：<a href="https://github.com/maple-nishiyama/coin_game">GitHub</a></li>
 			</ul>
 
-			<h2 class="h2">あなたが受け取ったコイン：<span id="my_coin">-</span>枚</h2>
+			<h2 class="h2"><span id="my_coin_header" style="position: relative">あなたが受け取ったコイン：<span id="my_coin">-</span>枚</span></h2>
 			<h3 class="h3">みんなが受け取ったコインの合計：<span id="all_coin">-</span>枚</h3>
 			<h3 class="h3">みんなのプレイ回数：<span id="all_games">-</span>回</h3>
 			<div>
 				<button id="btn-post-bet" type="button" class="btn btn-primary">コインを投げる！</button>
 				<button id="btn-auto-play" type="button" class="btn btn-success">オートプレイ！</button>
 				<button id="btn-post-reset" type="button" class="btn btn-info">リセットする</button>
-				<span id="result_anime"></span>
+				<span id="result_anime" style="position:relative"></span>
 			</div>
 			<div class="tweet_button">
 				<a href="https://twitter.com/share" class="twitter-share-button" data-text="期待値は無限大だけど・・・？\nサンクトペテルブルクのパラドックスゲーム" data-via="d_nishiyama85">Tweet</a>
@@ -296,6 +353,9 @@
 			fjs.parentNode.insertBefore(js, fjs);
 		}
 	}(document, 'script', 'twitter-wjs');</script>
+				<span class="animation-checkbox">
+					<label><input id="animation-checkbox" type="checkbox" value="">アニメーション</label>
+				</span>
 			</div>
 			<h4 class="h4">あなたの成績</h4>
 			<table class="table">

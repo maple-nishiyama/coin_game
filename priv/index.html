@@ -78,7 +78,6 @@
 				$("#my_coin").text(status.coin.toLocaleString());
 				$("#my_combo").text(status.combo.toLocaleString());
 				$("#my_max_combo").text(status.max_combo.toLocaleString());
-				$("#my_max_coin").text(status.max_coin.toLocaleString());
 				$("#my_total_game").text(status.total_game.toLocaleString());
 				update_history(status.history);
 				update_my_properties(status.coin, status.total_game);
@@ -245,30 +244,31 @@
 					<th>連続成功回数最高記録</th>
 					<td><span id="my_max_combo">-</span>回</td>
 				</tr>
-				<tr>
-					<th>所持コイン最高記録</th>
-					<td><span id="my_max_coin">-</span>枚</td>
-				</tr>
 			</table>
 
-			<h4>連続成功回数の履歴</h4>
-			<table>
-				<tbody id="history">
-				</tbody>
-			</table>
-
-			<h4>参加料N枚の場合の差し引き財産</h4>
-			<table>
-				<thead>
-					<tr>
-						<th>参加料</th>
-						<th>あなたの財産</th>
-						<th>みんなの総財産</th>
-					</tr>
-				</thead>
-				<tbody id="my_properties">
-				</tbody>
-			</table>
+			<div class="row">
+				<div class="col-md-6">
+					<h4>連続成功回数の履歴</h4>
+					<table>
+						<tbody id="history">
+						</tbody>
+					</table>
+				</div>
+				<div class="col-md-6">
+					<h4>参加料N枚の場合の差し引き財産</h4>
+					<table>
+						<thead>
+							<tr>
+								<th>参加料</th>
+								<th>あなたの財産</th>
+								<th>みんなの総財産</th>
+							</tr>
+						</thead>
+						<tbody id="my_properties">
+						</tbody>
+					</table>
+				</div>
+			</div>
 		</div><!-- /.container -->
 
 	</body>

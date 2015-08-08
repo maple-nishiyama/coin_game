@@ -24,7 +24,7 @@
 
 init(_, _, _) ->
     % 乱数初期化
-    random:seed(now()),
+    random:seed(os:timestamp()),
     {upgrade, protocol, cowboy_websocket}.
 
 websocket_init(_, Req, _Opts) ->

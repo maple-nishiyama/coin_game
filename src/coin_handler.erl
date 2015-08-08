@@ -44,14 +44,16 @@ websocket_init(_, Req, _Opts) ->
 %%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
 websocket_handle({text, Cmd}, Req, #state{user = User} = State) ->
     % io:format("Command = ~s~n", [Cmd]),
-    User1 = case Cmd of
-		<<"post_bet">> -> cmd_bet(User);
-		<<"login:", Buuid:36/binary>> -> cmd_user_login(User, Buuid);
-		_ -> User
+    {User1, ResponseCmd} = case Cmd of
+		<<"post_bet">> -> {cmd_bet(User), <<"play_result">>};
+		<<"login:", Buuid:36/binary>> -> {cmd_user_login(User, Buuid), <<"update_status">>};
+		_ -> {User, <<"update_status">>}
 	    end,
     save(User1),
+
+
     State1 = State#state{user = User1},
-    Response = make_response(User1, <<"update_status">>),
+    Response = make_response(User1, ResponseCmd),
     {reply, {text, Response}, Req, State1};		    
 
 websocket_handle({text, Data}, Req, State) ->

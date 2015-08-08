@@ -9,6 +9,7 @@
 		<link rel="stylesheet" href="https://maxcdn.bootstrapcdn.com/bootstrap/3.2.0/css/bootstrap.min.css">
 		<!-- JQuery -->
 		<script src="https://ajax.googleapis.com/ajax/libs/jquery/1.11.1/jquery.min.js"></script>
+		<script src="https://cdnjs.cloudflare.com/ajax/libs/jquery-easing/1.3/jquery.easing.min.js"></script>
 		<!-- bootstrap -->
 		<script src="https://maxcdn.bootstrapcdn.com/bootstrap/3.2.0/js/bootstrap.min.js"></script>
 		<script>
@@ -42,11 +43,22 @@
 				// WebSocketからメッセージが届くときに実行される関数
 				ws_connection.onmessage = function(e) {
 					var msg = JSON.parse(e.data);
-					console.log("msg type = " + msg.type);
+					//console.log("msg type = " + msg.type);
 					switch (msg.type) {
 						case "update_status":
 							update_status(msg.data);
 							player_status = msg.data;
+							break;
+						case "play_result":
+							update_status(msg.data);
+							player_status = msg.data;
+							// アニメーション再生
+							var status = msg.data;
+							if (status.last_game === "win") {
+								play_result_animation(true, status.combo);
+							} else if (status.last_game === "lose") {
+								play_result_animation(false);
+							}
 							break;
 						case "update_sum":
 							update_sum(msg.data);
@@ -185,6 +197,24 @@
 				clearTimeout(autoplayTimer);
 			}
 
+			// アニメーション
+			function play_result_animation(isWin, times) {
+				var text = isWin ? "" + times + "連勝" : "負";
+				var color = isWin ? "red" : "blue";
+				var anime = $("<span></span>", {class: "anime-result", text: text, style: "color:" + color + ";"});
+				$("#result_anime").prepend(anime);
+				anime.animate({
+					"left": "+=100px"
+				},
+				{
+					duration: 1000,
+					easing: "easeOutQuad",
+					complete: function() {
+						this.remove();
+					}
+				});
+			}
+
 			// JS初期化
 			$(function($) {
 				ws_init();
@@ -218,6 +248,16 @@
 				margin-top: 20px;
 				text-align: right;
 			}
+			.tweet_button {
+				margin: 20px;
+			}
+			/* 結果アニメーション */
+			span.anime-result {
+				position: absolute;
+				left: 500px;
+				font-size: x-large;
+				font-weight: bold;
+			}
 			//-->
 		</style>
 	</head>
@@ -228,11 +268,12 @@
 			<p>
 				意思決定論の問題、「サンクトペテルブルクのパラドックス」を体験できるシミュレーターです。<br/>
 				オンラインで参加者全体のプレイ結果を集計しているので、みんなで遊べば全体の成績が向上することが期待できます。<br/>
-				実装には Erlang/OTP, Cowboy, Websocket などの技術を使っています。
+				実装には Erlang/OTP, Cowboy, Websocket などの技術を使っています。</br>
 			</p>
 			<ul class="ul">
 				<li><a href="https://twitter.com/kuina_ch/status/628220045143834624" target="_blank">ツイッター</a></li>
 				<li><a href="https://ja.wikipedia.org/wiki/%E3%82%B5%E3%83%B3%E3%82%AF%E3%83%88%E3%83%9A%E3%83%86%E3%83%AB%E3%83%96%E3%83%AB%E3%82%AF%E3%81%AE%E3%83%91%E3%83%A9%E3%83%89%E3%83%83%E3%82%AF%E3%82%B9" target="_blank">Wikipedia： サンクトペテルブルクのパラドックス</a></li>
+				<li>ソース：<a href="https://github.com/maple-nishiyama/coin_game">GitHub</a></li>
 			</ul>
 
 			<h2 class="h2">あなたが受け取ったコイン：<span id="my_coin">-</span>枚</h2>
@@ -242,8 +283,20 @@
 				<button id="btn-post-bet" type="button" class="btn btn-primary">コインを投げる！</button>
 				<button id="btn-auto-play" type="button" class="btn btn-success">オートプレイ！</button>
 				<button id="btn-post-reset" type="button" class="btn btn-info">リセットする</button>
+				<span id="result_anime"></span>
 			</div>
-
+			<div class="tweet_button">
+				<a href="https://twitter.com/share" class="twitter-share-button" data-text="期待値は無限大だけど・・・？\nサンクトペテルブルクのパラドックスゲーム" data-via="d_nishiyama85">Tweet</a>
+				<script>!function(d, s, id) {
+		var js, fjs = d.getElementsByTagName(s)[0], p = /^http:/.test(d.location) ? 'http' : 'https';
+		if (!d.getElementById(id)) {
+			js = d.createElement(s);
+			js.id = id;
+			js.src = p + '://platform.twitter.com/widgets.js';
+			fjs.parentNode.insertBefore(js, fjs);
+		}
+	}(document, 'script', 'twitter-wjs');</script>
+			</div>
 			<h4 class="h4">あなたの成績</h4>
 			<table class="table">
 				<tr>

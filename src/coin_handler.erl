@@ -65,10 +65,13 @@ websocket_handle(_Frame, Req, State) ->
 % システム側からの呼び出し
 %%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
 % コインの集計情報
-websocket_info({gproc_ps_event, broadcast_sum, Sum}, Req, State) ->
+websocket_info({gproc_ps_event, broadcast_sum, {Amount, Times}}, Req, State) ->
     Response = jiffy:encode(#{
 			       <<"type">> => <<"update_sum">>,
-			       <<"data">> => Sum
+			       <<"data">> => #{
+				   <<"amount">> => Amount,
+				   <<"times">> => Times
+				  }
 			     }),
     {reply, {text, Response}, Req, State};
 
@@ -107,23 +110,17 @@ cmd_bet(User) ->
     MaxCoin = User#user.max_coin,
     MaxCombo = User#user.max_combo,
 
-    % 一回目に投げるときに参加費を払う
-    Fee = case Combo of
-	      0 -> ?FEE;
-	      _ -> 0
-	  end,
-
     case win_or_lose() of
 	win ->
 	    User#user{
-	      coin = Coin - Fee,
+	      coin = Coin,
 	      combo = Combo + 1,
 	      max_coin = MaxCoin,
 	      max_combo = lists:max([MaxCombo, Combo + 1]),
 	      last_game = win
 	     };
 	lose ->
-	    Coin1 = Coin + prize(Combo) - Fee,
+	    Coin1 = Coin + prize(Combo),
 	    History = User#user.history,
 	    Key = list_to_binary(integer_to_list(Combo)),
 	    User#user{

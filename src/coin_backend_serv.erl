@@ -21,4 +21,8 @@ loop(_Status) ->
     loop(_Status).
 
 sum() ->
-    dets:foldl(fun(User, Sum) -> Sum + User#user.coin end, 0, coin).
+    dets:foldl(fun(User, {Amount, Times}) ->
+		       {Amount + User#user.coin,
+			Times + User#user.total_game}
+	       end,
+	       {0, 0}, coin).

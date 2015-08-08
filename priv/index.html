@@ -57,7 +57,7 @@
 				};
 				// WebSocketが切断されるときにメッセージを表示
 				ws_connection.onclose = function(e) {
-					window.alert("一定時間操作がされなかったため接続が切断されました。ページをリロードしてください。");
+					window.alert("サーバーとの接続が切断されました。ページをリロードしてください。");
 				}
 			}
 
@@ -75,26 +75,60 @@
 			}
 
 			function update_status(status) {
-				$("#my_coin").text(status.coin);
-				$("#my_combo").text(status.combo);
-				$("#my_max_combo").text(status.max_combo);
-				$("#my_max_coin").text(status.max_coin);
-				$("#my_total_game").text(status.total_game);
+				$("#my_coin").text(status.coin.toLocaleString());
+				$("#my_combo").text(status.combo.toLocaleString());
+				$("#my_max_combo").text(status.max_combo.toLocaleString());
+				$("#my_max_coin").text(status.max_coin.toLocaleString());
+				$("#my_total_game").text(status.total_game.toLocaleString());
 				update_history(status.history);
+				update_my_properties(status.coin, status.total_game);
 				if (status.coin >= 0) {
-					$("#my_coin").addClass("my_coin_plus").removeClass("my_coin_minus");
+					$("#my_coin").addClass("plus").removeClass("minus");
 				} else {
-					$("#my_coin").addClass("my_coin_minus").removeClass("my_coin_plus");
+					$("#my_coin").addClass("minus").removeClass("plus");
 				}
+			}
+			var fee_list = [1, 2, 3, 4, 5, 10, 100, 1000, 10000];
+			function init_properties() {
+				$("#my_properties").html("");
+				fee_list.forEach(function(fee, i, a) {
+					var title = $("<th></th>", {text: fee.toLocaleString() + "枚"});
+					var my_amount = $("<td></td>", {id: "my_prop_" + fee, text: "-枚"});
+					var all_amount = $("<td></td>", {id: "all_prop_" + fee, text: "-枚"});
+					var tr = $("<tr></tr>");
+					$("#my_properties").append(
+							tr
+							.append(title)
+							.append(my_amount)
+							.append(all_amount));
+				});
+			}
+			function update_my_properties(coin, times) {
+				fee_list.forEach(function(fee, i, a){
+					var target = $("#my_prop_" + fee);
+					var amount = coin - fee * times;
+					target.text(amount.toLocaleString() + "枚");
+					amount < 0 ? target.addClass("minus") :	target.removeClass("minus");
+				});
+			}
+
+			function update_all_properties(coin, times) {
+				fee_list.forEach(function(fee, i, a){
+					var target = $("#all_prop_" + fee);
+					var amount = coin - fee * times;
+					target.text(amount.toLocaleString() + "枚");
+					amount < 0 ? target.addClass("minus") :	target.removeClass("minus");
+				});
 			}
 
 			function update_sum(sum) {
-				$("#all_coin").text(sum);
+				$("#all_coin").text(sum.amount.toLocaleString());
 				if (sum >= 0) {
 					$("#all_coin").addClass("my_coin_plus").removeClass("my_coin_minus");
 				} else {
 					$("#all_coin").addClass("my_coin_minus").removeClass("my_coin_plus");
 				}
+				update_all_properties(sum.amount, sum.times)
 			}
 
 			function update_history(history) {
@@ -132,7 +166,7 @@
 			var isAutodrive = false;
 			function autodrive() {
 				post_bet();
-				autoplayTimer = setTimeout(start_autodrive, 50);
+				autoplayTimer = setTimeout(start_autodrive, 10);
 			}
 			function start_autodrive() {
 				isAutodrive = true;
@@ -163,18 +197,18 @@
 				$("#btn-auto-play").click(function() {
 					isAutodrive ? stop_autodrive() : start_autodrive();
 				});
-
+				init_properties();
 			});
 		</script>
 		<style type="text/css">
 			<!--
-			.my_coin_plus {
+			.plus {
 				color: black;
 			}
-			.my_coin_minus {
+			.minus {
 				color:red;
 			}
-			td {
+			td,th {
 				text-align: right;
 				padding-left: 50px;
 			}
@@ -187,8 +221,8 @@
 	<body>
 		<div class="container">
 			<h1>サンクトペテルブルクのパラドックスゲーム</h1>
-			<h2>あなたのコイン：<span id="my_coin">-</span>枚</h2>
-			<h3>みんなのコインの合計：<span id="all_coin">-</span>枚</h3>
+			<h2>あなたが受け取ったコイン：<span id="my_coin">-</span>枚</h2>
+			<h3>みんなが受け取ったコインの合計：<span id="all_coin">-</span>枚</h3>
 			<div>
 				<button id="btn-post-bet" type="button" class="btn btn-primary">コインを投げる！</button>
 				<button id="btn-auto-play" type="button" class="btn btn-success">オートプレイ！</button>
@@ -213,6 +247,19 @@
 					</tr>
 				</thead>
 				<tbody id="history">
+				</tbody>
+			</table>
+
+			<h4>参加料N枚の場合の差し引き財産</h4>
+			<table>
+				<thead>
+					<tr>
+						<th>参加料</th>
+						<th>あなたの財産</th>
+						<th>みんなの総財産</th>
+					</tr>
+				</thead>
+				<tbody id="my_properties">
 				</tbody>
 			</table>
 		</div><!-- /.container -->

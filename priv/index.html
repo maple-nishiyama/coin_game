@@ -14,7 +14,10 @@
 		<script src="https://maxcdn.bootstrapcdn.com/bootstrap/3.2.0/js/bootstrap.min.js"></script>
 		<script>
 			// Websocketエンドポイント宣言
-			var ws_url = "ws://" + window.location.host + "/websocket";
+			var host = window.location.hostname;
+			var port = window.location.port;
+			var path = window.location.pathname;
+			var ws_url = "ws://" + host + ":" + port + path + "websocket";
 			// WebSocket接続変数
 			var ws_connection;
 
@@ -343,7 +346,8 @@
 				<span id="result_anime" style="position:relative"></span>
 			</div>
 			<div class="tweet_button">
-				<a href="https://twitter.com/share" class="twitter-share-button" data-text="期待値は無限大だけど・・・？\nサンクトペテルブルクのパラドックスゲーム" data-via="d_nishiyama85">Tweet</a>
+				<a href="https://twitter.com/share" class="twitter-share-button" data-text="期待値は無限大だけど・・・？
+サンクトペテルブルクのパラドックスゲーム" data-via="d_nishiyama85">Tweet</a>
 				<script>!function(d, s, id) {
 		var js, fjs = d.getElementsByTagName(s)[0], p = /^http:/.test(d.location) ? 'http' : 'https';
 		if (!d.getElementById(id)) {
